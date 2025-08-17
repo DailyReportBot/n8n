@@ -1,0 +1,985 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -512,
+        -64
+      ],
+      "id": "0773cc07-3069-4233-8d2e-a077263a504c",
+      "name": "Telegram Trigger",
+      "webhookId": "727e1f8a-fb4f-471c-a421-0a7646b2cd06",
+      "credentials": {
+        "telegramApi": {
+          "id": "wK6bf5RhWYBajxf9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "keyValue": "={{ $json.message.from.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -64
+      ],
+      "id": "b21d5d71-3e80-4a41-b1ed-6b1077b769d7",
+      "name": "Get a row",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "SDKsrSpPu4EE4DXJ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "477c2cd3-bb2d-40d0-9776-246a5472bd67",
+              "leftValue": "={{ $json.created_at }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        96,
+        -64
+      ],
+      "id": "06f77dbb-4e73-4c98-99c1-866bc88d4f2d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Привет {{ $('Telegram Trigger').item.json.message.from.first_name }}! Теперь можешь писать свои отчеты о проделаной работе, а я буду сохрянять все в базу.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        -160
+      ],
+      "id": "8e71e155-5a24-435a-b54f-6f2cc7cc9acc",
+      "name": "Send a text message",
+      "webhookId": "b461f1ae-f7d9-4537-9296-79599821186e",
+      "credentials": {
+        "telegramApi": {
+          "id": "wK6bf5RhWYBajxf9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "users",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "telegram_id",
+              "fieldValue": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Telegram Trigger').item.json.message.from.first_name }}"
+            },
+            {
+              "fieldId": "sheet_name",
+              "fieldValue": "={{ $('Telegram Trigger').item.json.message.from.username }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -160
+      ],
+      "id": "14607d3c-ccb7-448a-bdd9-04dd98fa10fe",
+      "name": "Create a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "SDKsrSpPu4EE4DXJ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        -160
+      ],
+      "id": "cee8e781-d1d1-444a-8b23-4336827d9e03",
+      "name": "Wait",
+      "webhookId": "5b743e94-1062-4fb2-8cb7-d8ace987f0da"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Send a text message').item.json.result.chat.id }}",
+        "messageId": "={{ $('Send a text message').item.json.result.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        928,
+        -160
+      ],
+      "id": "7b1d3f9a-b770-439c-ab46-1594c75da7eb",
+      "name": "Delete a chat message",
+      "webhookId": "f1f4d5cb-1ab9-49aa-a1d5-4321f607ad13",
+      "credentials": {
+        "telegramApi": {
+          "id": "wK6bf5RhWYBajxf9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f65cb7ac-1b7d-4c31-9a88-4343edb6618d"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        576,
+        144
+      ],
+      "id": "aec57f97-6daf-43c2-805b-bba3acec409a",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "= Привет {{ $('Telegram Trigger').item.json.message.from.first_name }} добавь свой отчёт за сегоднишний день.",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Добавить отчёт",
+                    "additionalFields": {
+                      "callback_data": "report"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        832,
+        144
+      ],
+      "id": "67641679-7ba2-4580-b449-d3314c892225",
+      "name": "Send a text message1",
+      "webhookId": "1ed51f3b-f74a-46fe-abf3-7ce78f4e1610",
+      "credentials": {
+        "telegramApi": {
+          "id": "wK6bf5RhWYBajxf9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 5,
+        "output": "={{ $json[\"callback_query\"] ? 2 : $json[\"message\"][\"photo\"] ? 3 : $json[\"message\"][\"voice\"] ? 4 : 1 }}\n"
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -336,
+        32
+      ],
+      "id": "75bf8eea-cabc-4aad-9708-c3f627360f7c",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "Я пока не принимаю голосовые сообщения. Пиши ручками",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -112,
+        352
+      ],
+      "id": "a3715d58-f18b-4817-8d32-122074f5886f",
+      "name": "Voice massage",
+      "webhookId": "4292fae5-3a12-4200-ba3b-f079ec27cd7a",
+      "credentials": {
+        "telegramApi": {
+          "id": "wK6bf5RhWYBajxf9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.callback_query.from.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "waiting"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        48,
+        224
+      ],
+      "id": "a6c3c709-b2ea-4dba-b359-0af1042ab1b4",
+      "name": "Update a row",
+      "credentials": {
+        "supabaseApi": {
+          "id": "SDKsrSpPu4EE4DXJ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.callback_query.message.chat.id }}",
+        "text": "Напиши что ты сегодня сделал.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        272,
+        224
+      ],
+      "id": "dd359a2d-a587-4a25-ba06-6f375c6139f6",
+      "name": "Send a text message2",
+      "webhookId": "56f71664-1603-4e8a-b6b5-607863805d89",
+      "credentials": {
+        "telegramApi": {
+          "id": "wK6bf5RhWYBajxf9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "607aa19a-5b52-43b2-9ab0-7fef0cfda802",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "waiting",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        304,
+        32
+      ],
+      "id": "47258ecc-aaeb-4498-a3b8-994efa9b8467",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "tableId": "daily_reports",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "original_text",
+              "fieldValue": "={{ $('Telegram Trigger').item.json.message.text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -16
+      ],
+      "id": "4c6684fc-ac76-4ec8-a1cb-db2bc035a12e",
+      "name": "Create a row1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "SDKsrSpPu4EE4DXJ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "recived"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        768,
+        -16
+      ],
+      "id": "bedef96b-a20e-44bc-8fb3-dcd38fa026f3",
+      "name": "Update a row1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "SDKsrSpPu4EE4DXJ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "Я записал!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        -16
+      ],
+      "id": "64ef7446-1fc3-41a6-9541-6a4d5ecf7899",
+      "name": "Send a text message3",
+      "webhookId": "e53c221a-accc-46de-8ae5-b1ab06646915",
+      "credentials": {
+        "telegramApi": {
+          "id": "wK6bf5RhWYBajxf9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1184,
+        -16
+      ],
+      "id": "83d5e91f-a196-43b3-97f9-46993ff45c9d",
+      "name": "Wait1",
+      "webhookId": "6f25d712-4342-45a2-b603-c59577854e8f"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $json.result.chat.id }}",
+        "messageId": "={{ $('Send a text message3').item.json.result.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1392,
+        -16
+      ],
+      "id": "81b54e80-894d-412b-b8b6-798e5af84df9",
+      "name": "Delete a chat message1",
+      "webhookId": "383d7cf9-cc0e-4c72-8836-7418f68eade0",
+      "credentials": {
+        "telegramApi": {
+          "id": "wK6bf5RhWYBajxf9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 7
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1040,
+        144
+      ],
+      "id": "834b41ec-0ad3-42dd-bb5f-e1597a54bc31",
+      "name": "Wait2",
+      "webhookId": "84c7f8f2-7f69-44b5-afdb-15c472ba7aee"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $json.result.chat.id }}",
+        "messageId": "={{ $json.result.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1248,
+        144
+      ],
+      "id": "1651336f-92d5-40e6-b968-ab6a9475df8d",
+      "name": "Delete a chat message2",
+      "webhookId": "d8ee30b2-33f0-4e26-a442-c610c3eebfa0",
+      "credentials": {
+        "telegramApi": {
+          "id": "wK6bf5RhWYBajxf9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        272
+      ],
+      "id": "53c1fa66-4464-4f07-91d0-a4a0d72a15b4",
+      "name": "Wait3",
+      "webhookId": "042d9ef5-069f-468f-9837-ee3651985ee1"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $json.result.chat.id }}",
+        "messageId": "={{ $json.result.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        736,
+        272
+      ],
+      "id": "971b53b0-ad71-41dd-be62-16e233235e9c",
+      "name": "Delete a chat message3",
+      "webhookId": "9d9370d6-def8-4e7f-b20c-87df571ad63b",
+      "credentials": {
+        "telegramApi": {
+          "id": "wK6bf5RhWYBajxf9",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 21 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -736,
+        528
+      ],
+      "id": "0c3f5ee3-9f24-4dfd-8a72-9cd6ff929db8",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "users"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        528
+      ],
+      "id": "63b9d16d-1c47-433a-935b-b6c903094bec",
+      "name": "Get many rows",
+      "credentials": {
+        "supabaseApi": {
+          "id": "SDKsrSpPu4EE4DXJ",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -320,
+        528
+      ],
+      "id": "488c9440-45aa-4548-bbb1-56677d1b1159",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        656
+      ],
+      "id": "b95f4558-6cdf-4d9b-9e6c-e79fe3f00f9e"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.telegram_id }}",
+        "text": "= Привет {{ $json.name }} незабудь добавить свой отчёт.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        512
+      ],
+      "id": "f96580ff-3447-45fe-a467-560279507118",
+      "name": "Send a text message4",
+      "webhookId": "1ed51f3b-f74a-46fe-abf3-7ce78f4e1610",
+      "credentials": {
+        "telegramApi": {
+          "id": "wK6bf5RhWYBajxf9",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "Voice massage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Voice massage": {
+      "main": [
+        []
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Create a row1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row1": {
+      "main": [
+        [
+          {
+            "node": "Update a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row1": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message3": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message1": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message2": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6c299491-466a-49c3-9195-dc73d1b32e42",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "bee297e55e32814123824fe6c6162d165ed07e2c438b23fce7da05ce029faa73"
+  },
+  "id": "XjbtVAPUDNPS2gbK",
+  "tags": []
+}
